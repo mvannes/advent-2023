@@ -4,6 +4,7 @@ import (
 	"bufio"
 	"fmt"
 	"log"
+	"math"
 	"os"
 	"strconv"
 	"strings"
@@ -78,18 +79,33 @@ func main() {
 
 	result := 0
 	for _, game := range games {
-		gameIsPossible := true
+		maxRed := math.MinInt
+		maxBlue := math.MinInt
+		maxGreen := math.MinInt
+
 		for _, set := range game.Sets {
-			if set.Red > 12 || set.Blue > 14 || set.Green > 13 {
-				gameIsPossible = false
-				break
+			if set.Red > maxRed {
+				maxRed = set.Red
+			}
+			if set.Blue > maxBlue {
+				maxBlue = set.Blue
+			}
+			if set.Green > maxGreen {
+				maxGreen = set.Green
 			}
 		}
-		if !gameIsPossible {
-			continue
-		}
 
-		result += game.GameNumber
+		gamePower := 1;
+		if maxRed != math.MinInt {
+			gamePower = gamePower * maxRed
+		}
+		if maxBlue != math.MinInt {
+			gamePower = gamePower * maxBlue
+		}
+		if maxGreen != math.MinInt {
+			gamePower = gamePower * maxGreen
+		}
+		result += gamePower
 	}
 
 	fmt.Println(result)
