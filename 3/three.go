@@ -20,6 +20,11 @@ type Symbol struct {
 	x int
 }
 
+type Gear struct {
+	Symbol          Symbol
+	AdjacentNumbers []Number
+}
+
 func main() {
 	f, err := os.Open("input")
 	if nil != err {
@@ -30,6 +35,7 @@ func main() {
 	y := 0
 	numbers := []Number{}
 	symbols := []Symbol{}
+	gears := []Gear{}
 	for scan.Scan() {
 		line := scan.Text()
 
@@ -58,17 +64,24 @@ func main() {
 			}
 
 			// Symbol
-			symbols = append(symbols, Symbol{
+			s := Symbol{
 				y: y,
 				x: index,
-			})
+			}
+			symbols = append(symbols, s)
+			if token == "*" {
+				gears = append(gears, Gear{
+					Symbol:          s,
+					AdjacentNumbers: nil,
+				})
+			}
 			index++
 		}
 
 		y++
 	}
 
-	res := 0
+	partNumbers := []Number{}
 	for _, number := range numbers {
 		isAdjacentToSymbol := false
 		for _, symbol := range symbols {
@@ -83,15 +96,40 @@ func main() {
 			}
 		}
 		if isAdjacentToSymbol {
-			fmt.Println(number, "adjacent")
-			res += number.Number
-		}
-		if !isAdjacentToSymbol {
-			fmt.Println(number, "not adjacent")
+			partNumbers = append(partNumbers, number)
 		}
 	}
 
+	// I could combine this with the previous loop, but cba.
+	for i, gear := range gears {
+		for _, number := range partNumbers {
+			isNumberInXRange := number.xStart-1 <= gear.Symbol.x && gear.Symbol.x <= number.xEnd+1
+			isNumberInYRange := number.y-1 <= gear.Symbol.y && gear.Symbol.y <= number.y+1
+
+			if isNumberInYRange && isNumberInXRange {
+				gear.AdjacentNumbers = append(gear.AdjacentNumbers, number)
+			}
+		}
+		gears[i] = gear
+	}
+
+	fmt.Println(gears)
+
+	// This loop is unnecessary.
+	res := 0
+	for _, gear := range gears {
+		if len(gear.AdjacentNumbers) != 2 {
+			continue
+		}
+		gearRes := 1
+		for _, n := range gear.AdjacentNumbers {
+			gearRes *= n.Number
+		}
+		res += (gearRes)
+	}
+
 	fmt.Println(res)
+
 }
 
 func getInt(line string, startIndex int) (int, int) {
